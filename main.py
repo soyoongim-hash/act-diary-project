@@ -251,39 +251,38 @@ with tab2:
         if not monthly_data:
             st.info("📭 아직 저장된 기록이 없습니다. 입력하기 탭에서 답변을 입력해주세요.")
         else:
-        # 월별 선택
-        months = list(monthly_data.keys())
-        selected_month = st.selectbox("조회할 월을 선택하세요", months)
-        
-        if selected_month:
-            entries = monthly_data[selected_month]
+            # 월별 선택
+            months = list(monthly_data.keys())
+            selected_month = st.selectbox("조회할 월을 선택하세요", months)
             
-            st.markdown(f"### 📅 {selected_month} 기록 ({len(entries)}개)")
-            st.divider()
-            
-            # 날짜별 기록 표시
-            for idx, entry in enumerate(entries, 1):
-                with st.expander(f"🔖 {entry['date']} - {entry['impulse_type']}", expanded=False):
-                    for question, answer in entry['qa_pairs']:
-                        st.markdown(f"**{question}**")
-                        st.text(answer)
-                        st.divider()
-            
-            # 통계 정보
-            st.divider()
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                st.metric("총 기록 수", len(entries))
-            with col2:
-                impulse_types = [e['impulse_type'] for e in entries]
-                if impulse_types:
-                    most_common = max(set(impulse_types), key=impulse_types.count)
-                else:
-                    most_common = "-"
-                st.metric("가장 많은 충동", most_common)
-            
-            with col3:
-                unique_impulses = len(set(impulse_types)) if impulse_types else 0
-                st.metric("서로 다른 충동", unique_impulses)s))
-                st.metric("서로 다른 충동", unique_impulses)
+            if selected_month:
+                entries = monthly_data[selected_month]
+                
+                st.markdown(f"### 📅 {selected_month} 기록 ({len(entries)}개)")
+                st.divider()
+                
+                # 날짜별 기록 표시
+                for idx, entry in enumerate(entries, 1):
+                    with st.expander(f"🔖 {entry['date']} - {entry['impulse_type']}", expanded=False):
+                        for question, answer in entry['qa_pairs']:
+                            st.markdown(f"**{question}**")
+                            st.text(answer)
+                            st.divider()
+                
+                # 통계 정보
+                st.divider()
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    st.metric("총 기록 수", len(entries))
+                with col2:
+                    impulse_types = [e['impulse_type'] for e in entries]
+                    if impulse_types:
+                        most_common = max(set(impulse_types), key=impulse_types.count)
+                    else:
+                        most_common = "-"
+                    st.metric("가장 많은 충동", most_common)
+                
+                with col3:
+                    unique_impulses = len(set(impulse_types)) if impulse_types else 0
+                    st.metric("서로 다른 충동", unique_impulses)

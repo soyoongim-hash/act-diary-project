@@ -190,7 +190,8 @@ with tab1:
                     else:
                         # 다음 질문의 답변 필드 초기화
                         next_index = st.session_state.current_step
-                        st.session_state.responses[next_index] = ""
+                        if next_index < len(st.session_state.responses):
+                            st.session_state.responses[next_index] = ""
                         st.session_state.current_step += 1
                         st.rerun()
                 else:
@@ -274,12 +275,15 @@ with tab2:
             
             with col1:
                 st.metric("총 기록 수", len(entries))
-            
             with col2:
                 impulse_types = [e['impulse_type'] for e in entries]
-                most_common = max(set(impulse_types), key=impulse_types.count)
+                if impulse_types:
+                    most_common = max(set(impulse_types), key=impulse_types.count)
+                else:
+                    most_common = "-"
                 st.metric("가장 많은 충동", most_common)
             
             with col3:
-                unique_impulses = len(set(impulse_types))
+                unique_impulses = len(set(impulse_types)) if impulse_types else 0
+                st.metric("서로 다른 충동", unique_impulses)s))
                 st.metric("서로 다른 충동", unique_impulses)

@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 import datetime
 import re
@@ -26,11 +27,26 @@ act_questions = [
     "Q6. 방금 떠올린 소중한 가치와 모습을 지키기 위해, 지금 이 충동이 지나갈 동안 내가 당장 실천할 수 있는 작고 구체적인 행동(대안 활동) 한 가지는 무엇인가요? (예: 물 한 잔 마시기, 좋아하는 노래 한 곡 듣고 오기, 방 정리하기)"
 ]
 
-# 3. diary.txt 파일 파싱 함수
-def parse_diary_file():
-    """diary.txt 파일을 읽어 월별로 정리된 데이터 반환"""
+# 3. diary 파일 파싱 및 사용자 파일 경로 처리 함수
+def sanitize_username(name):
+    return re.sub(r"[^0-9a-zA-Z_-]", "_", name.strip())
+
+
+def get_user_file():
+    user_name = st.session_state.get("user_name", "").strip()
+    if not user_name:
+        return None
+    safe_name = sanitize_username(user_name)
+    os.makedirs("data", exist_ok=True)
+    return os.path.join("data", f"diary_{safe_name}.txt")
+
+
+def parse_diary_file(file_path):
+    """지정된 사용자 파일을 읽어 월별로 정리된 데이터 반환"""
+    if not file_path:
+        return {}
     try:
-        with open("diary.txt", "r", encoding="utf-8") as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             content = f.read()
     except FileNotFoundError:
         return {}
@@ -68,7 +84,7 @@ def parse_diary_file():
     
     return dict(sorted(monthly_data.items(), reverse=True))
 
-# 3. 간단한 AI 조언 생성 함수
+# 4. 간단한 AI 조언 생성 함수
 def generate_ai_advice(impulse_tag, responses):
     combined = " ".join([impulse_tag] + responses).lower()
     advices = []
@@ -91,6 +107,7 @@ def generate_ai_advice(impulse_tag, responses):
 # 4. Session state 초기화
 if "current_step" not in st.session_state:
     st.session_state.current_step = 0
+    st.session_state.user_name = ""
     st.session_state.impulse_tag = ""
     st.session_state.current_date = datetime.date.today()
     st.session_state.responses = [""] * len(act_questions)
@@ -104,6 +121,8 @@ with tab1:
         st.subheader("📋 시작하기")
         st.markdown("먼저 기본 정보를 입력해주세요.")
         
+        st.session_state.user_name = st.text_input("사용자 이름", value=st.session_state.user_name, placeholder="기록을 구분할 이름을 입력하세요.")
+        
         col1, col2 = st.columns(2)
         with col1:
             st.session_state.current_date = st.date_input("날짜 선택", datetime.date.today())
@@ -115,13 +134,15 @@ with tab1:
         col1, col2 = st.columns([1, 4])
         with col2:
             if st.button("✅ 시작하기", key="start_button", use_container_width=True):
-                if st.session_state.impulse_tag.strip():
+                if not st.session_state.user_name.strip():
+                    st.error("⚠️ 사용자 이름을 입력해주세요.")
+                elif not st.session_state.impulse_tag.strip():
+                    st.error("⚠️ 충동 유형을 입력해주세요.")
+                else:
                     st.session_state.setup_complete = True
                     st.session_state.current_step = 1
                     st.session_state.record_saved = False
                     st.rerun()
-                else:
-                    st.error("⚠️ 충동 유형을 입력해주세요.")
 
     # 5. 질문별 화면: 하나씩 질문에 답변하기
     elif st.session_state.current_step >= 1 and st.session_state.current_step <= len(act_questions):
@@ -187,8 +208,11 @@ with tab1:
         log_entry += "============================================================\n\n"
         
         # 파일 저장 (한 번만)
-        if not st.session_state.record_saved:
-            with open("diary.txt", "a", encoding="utf-8") as file:
+        user_file = get_user_file()
+        if not user_file:
+            st.error("⚠️ 사용자 이름을 먼저 입력한 뒤 다시 시도해주세요.")
+        elif not st.session_state.record_saved:
+            with open(user_file, "a", encoding="utf-8") as file:
                 file.write(log_entry)
             st.session_state.record_saved = True
         
@@ -217,11 +241,15 @@ with tab1:
 with tab2:
     st.subheader("📊 월별 기록 조회")
     
-    monthly_data = parse_diary_file()
-    
-    if not monthly_data:
-        st.info("📭 아직 저장된 기록이 없습니다. 입력하기 탭에서 답변을 입력해주세요.")
+    if not st.session_state.user_name.strip():
+        st.info("📌 먼저 입력하기 탭에서 사용자 이름을 입력한 후 기록을 조회하세요.")
     else:
+        user_file = get_user_file()
+        monthly_data = parse_diary_file(user_file)
+        
+        if not monthly_data:
+            st.info("📭 아직 저장된 기록이 없습니다. 입력하기 탭에서 답변을 입력해주세요.")
+        else:
         # 월별 선택
         months = list(monthly_data.keys())
         selected_month = st.selectbox("조회할 월을 선택하세요", months)

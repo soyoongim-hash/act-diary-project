@@ -1,8 +1,13 @@
 import os
+import json
+import hashlib
 import streamlit as st
 import datetime
 import re
 from collections import defaultdict
+
+DATA_DIR = "data"
+USER_DB_FILE = os.path.join(DATA_DIR, "users.json")
 
 # 1. 페이지 설정 및 디자인
 st.set_page_config(page_title="ACT 충동 조절 일기장", page_icon="🧠", layout="wide")
@@ -32,13 +37,41 @@ def sanitize_username(name):
     return re.sub(r"[^0-9a-zA-Z_-]", "_", name.strip())
 
 
-def get_user_file():
-    user_name = st.session_state.get("user_name", "").strip()
-    if not user_name:
-        return None
+def hash_password(password):
+    return hashlib.sha256(password.encode("utf-8")).hexdigest()
+
+
+def load_user_db():
+    os.makedirs(DATA_DIR, exist_ok=True)
+    try:
+        with open(USER_DB_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {}
+
+
+def save_user_db(db):
+    os.makedirs(DATA_DIR, exist_ok=True)
+    with open(USER_DB_FILE, "w", encoding="utf-8") as f:
+        json.dump(db, f, ensure_ascii=False, indent=2)
+
+
+def get_user_file(user_name):
     safe_name = sanitize_username(user_name)
-    os.makedirs("data", exist_ok=True)
-    return os.path.join("data", f"diary_{safe_name}.txt")
+    os.makedirs(DATA_DIR, exist_ok=True)
+    return os.path.join(DATA_DIR, f"diary_{safe_name}.txt")
+
+
+def verify_or_register_user(user_name, password):
+    if not user_name or not password:
+        return False
+    db = load_user_db()
+    hashed = hash_password(password)
+    if user_name in db:
+        return db[user_name] == hashed
+    db[user_name] = hashed
+    save_user_db(db)
+    return True
 
 
 def parse_diary_file(file_path):
@@ -108,6 +141,8 @@ def generate_ai_advice(impulse_tag, responses):
 if "current_step" not in st.session_state:
     st.session_state.current_step = 0
     st.session_state.user_name = ""
+    st.session_state.user_password = ""
+    st.session_state.logged_in = False
     st.session_state.impulse_tag = ""
     st.session_state.current_date = datetime.date.today()
     st.session_state.responses = [""] * len(act_questions)
@@ -122,6 +157,7 @@ with tab1:
         st.markdown("먼저 기본 정보를 입력해주세요.")
         
         st.session_state.user_name = st.text_input("사용자 이름", value=st.session_state.user_name, placeholder="기록을 구분할 이름을 입력하세요.")
+        st.session_state.user_password = st.text_input("비밀번호", type="password", value=st.session_state.user_password, placeholder="기록을 보호할 비밀번호")
         
         col1, col2 = st.columns(2)
         with col1:
@@ -136,13 +172,20 @@ with tab1:
             if st.button("✅ 시작하기", key="start_button", use_container_width=True):
                 if not st.session_state.user_name.strip():
                     st.error("⚠️ 사용자 이름을 입력해주세요.")
+                elif not st.session_state.user_password.strip():
+                    st.error("⚠️ 비밀번호를 입력해주세요.")
                 elif not st.session_state.impulse_tag.strip():
                     st.error("⚠️ 충동 유형을 입력해주세요.")
                 else:
-                    st.session_state.setup_complete = True
-                    st.session_state.current_step = 1
-                    st.session_state.record_saved = False
-                    st.rerun()
+                    if verify_or_register_user(st.session_state.user_name, st.session_state.user_password):
+                        st.session_state.logged_in = True
+                        st.session_state.setup_complete = True
+                        st.session_state.current_step = 1
+                        st.session_state.record_saved = False
+                        st.success("✅ 사용자 인증에 성공했습니다. 기록을 안전하게 저장합니다.")
+                        st.rerun()
+                    else:
+                        st.error("⚠️ 사용자 이름과 비밀번호가 일치하지 않습니다.")
 
     # 5. 질문별 화면: 하나씩 질문에 답변하기
     elif st.session_state.current_step >= 1 and st.session_state.current_step <= len(act_questions):
@@ -209,7 +252,7 @@ with tab1:
         log_entry += "============================================================\n\n"
         
         # 파일 저장 (한 번만)
-        user_file = get_user_file()
+        user_file = get_user_file(st.session_state.user_name)
         if not user_file:
             st.error("⚠️ 사용자 이름을 먼저 입력한 뒤 다시 시도해주세요.")
         elif not st.session_state.record_saved:
@@ -242,10 +285,10 @@ with tab1:
 with tab2:
     st.subheader("📊 월별 기록 조회")
     
-    if not st.session_state.user_name.strip():
-        st.info("📌 먼저 입력하기 탭에서 사용자 이름을 입력한 후 기록을 조회하세요.")
+    if not st.session_state.logged_in:
+        st.info("📌 먼저 입력하기 탭에서 사용자 이름과 비밀번호로 로그인한 후 기록을 조회하세요.")
     else:
-        user_file = get_user_file()
+        user_file = get_user_file(st.session_state.user_name)
         monthly_data = parse_diary_file(user_file)
         
         if not monthly_data:

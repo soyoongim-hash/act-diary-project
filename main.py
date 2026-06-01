@@ -306,11 +306,11 @@ with tab1:
         st.balloons()
         st.info("💡 전전두엽이 활성화되었습니다. 당신의 충동은 단지 지나가는 생각일 뿐입니다.")
         
-                # AI 조언 출력
+        # AI 조언 출력
         advice_text, support_text, char_type, img_path = generate_ai_advice(st.session_state.impulse_tag, st.session_state.responses)
 
         st.write("") # 약간의 공백
-        st.markdown(f"### {img_path} 현재 내면 상태: **[{char_type}]**")
+        st.markdown(f"### {img_path} 현재 내면 유형: **[{char_type}]**")
         
         # 화면을 2개의 칸으로 나누어 왼쪽에는 아이콘, 오른쪽에는 조언 배치
         col1, col2 = st.columns([1, 4])

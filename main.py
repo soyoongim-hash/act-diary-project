@@ -124,34 +124,52 @@ def generate_ai_advice(impulse_tag, responses):
     char_type = ""
     icon = ""  # 이미지 파일 경로('bear.png')나 이모지를 넣을 수 있습니다.
     
-    # 1. 에너지 방전형 (수면/휴식 그룹)
+    # 1. 에너지 방전형
     if any(term in combined for term in ["자고 싶", "졸려", "잠", "휴식", "피곤", "쉬고 싶"]):
         char_type = "에너지 방전형"
         icon = "💤"  # 또는 "images/bear.png" 처럼 경로 지정 가능
         advices.append("지금은 몸과 마음이 쉬어야 한다고 말하고 있어요. 짧은 낮잠이나 편안한 휴식으로 충동을 다독여 보세요.")
         
-    # 2. 도파민 탐색형 (미디어/게임 그룹)
-    elif any(term in combined for term in ["게임", "겜", "유튜브", "sns", "인스타", "틱톡", "페북"]):
+    # 2. 도파민 탐색형
+    elif any(term in combined for term in ["게임", "겜", "유튜브", "sns", "인스타", "틱톡", "트위터","]):
         char_type = "도파민 탐색형"
         icon = "📱"
         advices.append("충동을 억누르기보다 잠깐 멈추고 호흡을 깊게 해보세요. 5분 후에도 같은 충동인지 관찰해보는 연습이 도움이 됩니다.")
         
-    # 3. 가짜 배고픔형 (음식/간식 그룹)
+    # 3. 가짜 배고픔형
     elif any(term in combined for term in ["야식", "먹고 싶", "간식", "과자", "초콜릿", "배고프"]):
-        char_type = "가짜 배고픔형"
-        icon = "🍪"
+        char_type = "배고픈 햄스터"
+        icon = "🐹"
         advices.append("물을 먼저 한 잔 마시고, 진짜 배고픔인지 감정 충동인지 하나씩 관찰해보세요. 작은 대안 활동이 도움이 될 수 있어요.")
         
-    # 4. 생각 과부하형 (정서/스트레스 그룹)
-    elif any(term in combined for term in ["불안", "불편", "긴장", "초조", "스트레스", "우울", "슬프", "걱정"]):
-        char_type = "생각 과부하형"
-        icon = "⛈️"
+    # 4. 생각 과부하형
+    elif any(term in combined for term in ["불안", "불편", "긴장", "초조", "스트레스", "우울", "슬프", "걱정", "예민"]):
+        char_type = "생각 많은 고슴도치"
+        icon = "🦔"
         advices.append("지금 느끼는 감정을 있는 그대로 인정해보세요. 생각과 나를 분리하고, 내가 가치 있게 여기는 행동에 작은 한 걸음을 두는 것이 중요합니다.")
+    
+    # 5. 둥지 회귀형 
+    elif any(term in combined for term in ["집에 가고 싶", "집 갈래", "집에 보내줘", "집", "엄마", "집가고싶"]):
+        char_type = "알을 찾는 병아리"
+        icon = "🐣"
+        advices.append("지금 공간이 답답해서 가장 안전한 곳을 찾고 있네요. 잠시 눈을 감고 편안한 방을 상상하며 숨을 고른 뒤, 남은 시간을 견뎌봐요.")
+
+    # 6. 압박감 회피형 
+    elif any(term in combined for term in ["학원", "학원 가기 싫", "학원 패스", "수업 빼고"]):
+        char_type = "도망치고 싶은 치타"
+        icon = "🐆"
+        advices.append("가야 할 곳이 주는 압박감 때문에 마음이 도망치고 싶어 하네요. 그 불편함을 인정하되, 생각에 휘둘리지 말고 발걸음을 옮겨봐요.")
+
+    # 7. 진로 탐색형 
+    elif any(term in combined for term in ["직업", "대학", "학과", "공부", "성적", "진로", "진학"]):
+        char_type = "탐색 중인 사자"
+        icon = "🦁"
+        advices.append("진로 고민으로 불안하고 답답한 건 네가 인생을 진지하게 잘 살고 싶어 한다는 멋진 증거입니다. 좋아하는 것, 잘하는 것을 생각하며 이 감정을 받아들여 보아요.")
         
-    # 5. 미스터리 탐색형 (예외 처리)
+    # 8. 기타
     else:
-        char_type = "미스터리 탐색형"
-        icon = "🔮"
+        char_type = "생각이 깊은 유니콘"
+        icon = "🦄"
         advices.append("지금 느끼는 충동과 감정을 받아들이는 것 자체가 이미 의미 있는 시작입니다. 작은 행동부터 시도해보세요.")
     
     advice_text = advices[0]

@@ -289,7 +289,8 @@ with tab1:
         st.info("💡 전전두엽이 활성화되었습니다. 당신의 충동은 단지 지나가는 생각일 뿐입니다.")
         
         # AI 조언 출력
-        advice_text, support_text = generate_ai_advice(st.session_state.impulse_tag, st.session_state.responses)
+        advice_text, support_text, char_type, img_path = generate_ai_advice(st.session_state.impulse_tag, st.session_state.responses)
+
         st.markdown("### 🤖 ACT 맞춤 조언")
         st.info(advice_text)
         st.write(support_text)

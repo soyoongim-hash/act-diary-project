@@ -131,7 +131,7 @@ def generate_ai_advice(impulse_tag, responses):
         advices.append("지금은 몸과 마음이 쉬어야 한다고 말하고 있어요. 짧은 낮잠이나 편안한 휴식으로 충동을 다독여 보세요.")
         
     # 2. 도파민 탐색형
-    elif any(term in combined for term in ["게임", "겜", "유튜브", "sns", "인스타", "틱톡", "트위터","]):
+    elif any(term in combined for term in ["게임", "겜", "유튜브", "sns", "인스타", "틱톡", "트위터"]):
         char_type = "도파민 탐색형"
         icon = "📱"
         advices.append("충동을 억누르기보다 잠깐 멈추고 호흡을 깊게 해보세요. 5분 후에도 같은 충동인지 관찰해보는 연습이 도움이 됩니다.")

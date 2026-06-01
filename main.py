@@ -117,25 +117,48 @@ def parse_diary_file(file_path):
     
     return dict(sorted(monthly_data.items(), reverse=True))
 
-# 4. 간단한 AI 조언 생성 함수
+# 4. 간단한 AI 조언 및 캐릭터 생성 함수
 def generate_ai_advice(impulse_tag, responses):
     combined = " ".join([impulse_tag] + responses).lower()
     advices = []
+    char_type = ""
+    icon = ""  # 이미지 파일 경로('bear.png')나 이모지를 넣을 수 있습니다.
     
+    # 1. 에너지 방전형 (수면/휴식 그룹)
     if any(term in combined for term in ["자고 싶", "졸려", "잠", "휴식", "피곤", "쉬고 싶"]):
+        char_type = "에너지 방전형"
+        icon = "💤"  # 또는 "images/bear.png" 처럼 경로 지정 가능
         advices.append("지금은 몸과 마음이 쉬어야 한다고 말하고 있어요. 짧은 낮잠이나 편안한 휴식으로 충동을 다독여 보세요.")
-    if any(term in combined for term in ["게임", "겜", "유튜브", "sns", "인스타", "틱톡", "페북"]):
+        
+    # 2. 도파민 탐색형 (미디어/게임 그룹)
+    elif any(term in combined for term in ["게임", "겜", "유튜브", "sns", "인스타", "틱톡", "페북"]):
+        char_type = "도파민 탐색형"
+        icon = "📱"
         advices.append("충동을 억누르기보다 잠깐 멈추고 호흡을 깊게 해보세요. 5분 후에도 같은 충동인지 관찰해보는 연습이 도움이 됩니다.")
-    if any(term in combined for term in ["야식", "먹고 싶", "간식", "과자", "초콜릿", "배고프"]):
+        
+    # 3. 가짜 배고픔형 (음식/간식 그룹)
+    elif any(term in combined for term in ["야식", "먹고 싶", "간식", "과자", "초콜릿", "배고프"]):
+        char_type = "가짜 배고픔형"
+        icon = "🍪"
         advices.append("물을 먼저 한 잔 마시고, 진짜 배고픔인지 감정 충동인지 하나씩 관찰해보세요. 작은 대안 활동이 도움이 될 수 있어요.")
-    if any(term in combined for term in ["불안", "불편", "긴장", "초조", "스트레스", "우울", "슬프", "걱정"]):
+        
+    # 4. 생각 과부하형 (정서/스트레스 그룹)
+    elif any(term in combined for term in ["불안", "불편", "긴장", "초조", "스트레스", "우울", "슬프", "걱정"]):
+        char_type = "생각 과부하형"
+        icon = "⛈️"
         advices.append("지금 느끼는 감정을 있는 그대로 인정해보세요. 생각과 나를 분리하고, 내가 가치 있게 여기는 행동에 작은 한 걸음을 두는 것이 중요합니다.")
-    if not advices:
+        
+    # 5. 미스터리 탐색형 (예외 처리)
+    else:
+        char_type = "미스터리 탐색형"
+        icon = "🔮"
         advices.append("지금 느끼는 충동과 감정을 받아들이는 것 자체가 이미 의미 있는 시작입니다. 작은 행동부터 시도해보세요.")
     
     advice_text = advices[0]
     support_text = "당신은 이미 자신의 충동을 관찰하고 적어보는 연습을 했습니다. 그 자체로 충분히 잘해내고 있어요."
-    return advice_text, support_text
+    
+    # 캐릭터 유형과 아이콘 정보를 함께 반환합니다.
+    return advice_text, support_text, char_type, icon
 
 # 4. Session state 초기화
 if "current_step" not in st.session_state:

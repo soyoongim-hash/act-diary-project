@@ -288,12 +288,23 @@ with tab1:
         st.balloons()
         st.info("💡 전전두엽이 활성화되었습니다. 당신의 충동은 단지 지나가는 생각일 뿐입니다.")
         
-        # AI 조언 출력
+                # AI 조언 출력
         advice_text, support_text, char_type, img_path = generate_ai_advice(st.session_state.impulse_tag, st.session_state.responses)
 
-        st.markdown("### 🤖 ACT 맞춤 조언")
-        st.info(advice_text)
-        st.write(support_text)
+        st.write("") # 약간의 공백
+        st.markdown(f"### {img_path} 현재 내면 상태: **[{char_type}]**")
+        
+        # 화면을 2개의 칸으로 나누어 왼쪽에는 아이콘, 오른쪽에는 조언 배치
+        col1, col2 = st.columns([1, 4])
+        
+        with col1:
+            # 이모지 크기를 70px로 크게 키워 캐릭터 느낌을 냄
+            st.markdown(f"<h1 style='text-align: center; font-size: 70px; margin: 0;'>{img_path}</h1>", unsafe_allow_html=True)
+            
+        with col2:
+            st.info(advice_text)
+            st.caption(f"🌱 {support_text}")
+
         
         st.divider()
         
